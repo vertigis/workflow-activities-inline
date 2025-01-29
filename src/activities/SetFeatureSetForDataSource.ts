@@ -5,6 +5,8 @@ import { IActivityContext } from "@vertigis/workflow/IActivityHandler";
 interface SetFeatureSetForDataSourceInputs {
 
     /**
+     * The FeatureSet that will be used by the data source.
+     * 
      * @displayName FeatureSet
      * @description The FeatureSet that will be used by the data source.
      * @required
