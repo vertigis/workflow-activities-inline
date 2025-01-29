@@ -1,0 +1,28 @@
+{
+    "name": "vertigis-workflow-project",
+    "private": true,
+    "version": "1.0.0",
+    "description": "",
+    "license": "UNLICENSED",
+    "author": "",
+    "scripts": {
+        "build": "vertigis-workflow-sdk build",
+        "generate": "vertigis-workflow-sdk generate",
+        "start": "vertigis-workflow-sdk start"
+    },
+    "devDependencies": {
+        "@arcgis/core": "^4.31.2",
+        "@vertigis/workflow": "5.43.0",
+        "@vertigis/workflow-sdk": "5.0.0",
+        "typescript": "^5.4.3"
+    },
+    "browserslist": [
+        "last 2 chrome versions",
+        "last 2 edge versions",
+        "last 2 firefox versions",
+        "last 2 safari versions"
+    ],
+    "dependencies": {
+        "@vertigis/web": "^5.33.0"
+    }
+}
