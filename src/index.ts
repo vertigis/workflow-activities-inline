@@ -2,3 +2,5 @@
 export { default as GetMValuesFromCoordinatesActivity } from "./activities/GetMValuesFromCoordinates";
 
 export { default as GetCurrentRouteGeometryActivity } from "./activities/GetCurrentRouteGeometry";
+
+export { default as SetFeatureSetForDataSourceActivity } from "./activities/SetFeatureSetForDataSource";

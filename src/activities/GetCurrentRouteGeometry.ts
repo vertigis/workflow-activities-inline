@@ -1,4 +1,3 @@
-import Geometry from "@arcgis/core/geometry/Geometry";
 import type { IActivityHandler } from "@vertigis/workflow";
 import { getSegmentsForRoute } from "../utils/geometryUtils";
 import { LinearReferencingConfig } from "../models/LinearReferencingConfig";
@@ -30,7 +29,7 @@ interface GetCurrentRouteGeometryOutputs {
     /**
      * @description The result of the activity.
      */
-    geometry: Geometry | Geometry[];
+    geometry: __esri.Geometry | __esri.Geometry[];
 }
 
 /**
