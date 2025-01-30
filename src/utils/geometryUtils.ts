@@ -26,9 +26,10 @@ export async function calculateMValuesFromCoordinates(
     xField: string,
     yField: string,
     inSpatialReference: SpatialReference,
-    mValueFieldName: string
+    mValueFieldName: string,
 ) {
-    const lrs = inlineManager.linearReferencingConfig as LinearReferencingConfig;
+    const lrs =
+        inlineManager.linearReferencingConfig as LinearReferencingConfig;
     const routeId = inlineManager.currentRoute.routeId as string;
     const outSR = inlineManager.spatialReference as SpatialReference;
 
@@ -37,7 +38,16 @@ export async function calculateMValuesFromCoordinates(
     // Get the graphics for the current selected Inline route.
     const routeSegments = await getSegmentsForRoute(lrs, routeId, outSR);
     for (const feature of featureSet.features) {
-        const newFeature = setMValueForFeature(inlineManager, routeSegments, feature, useGeometry, xField, yField, inSpatialReference, mValueFieldName);
+        const newFeature = setMValueForFeature(
+            inlineManager,
+            routeSegments,
+            feature,
+            useGeometry,
+            xField,
+            yField,
+            inSpatialReference,
+            mValueFieldName,
+        );
         if (newFeature) {
             newFeatureSet.features.push(newFeature);
         }
@@ -54,18 +64,31 @@ function setMValueForFeature(
     xField: string,
     yField: string,
     inSpatialReference: SpatialReference,
-    mValueFieldName: string
+    mValueFieldName: string,
 ): Graphic | null {
-    const xValue = useGeometry ? (feature.geometry as Point).x : feature.attributes[xField];
-    const yValue = useGeometry ? (feature.geometry as Point).y : feature.attributes[yField];
-    const outSpatialReference = inlineManager.spatialReference as SpatialReference;
-    const point = new Point({longitude: xValue, latitude: yValue, spatialReference: inSpatialReference})
-    
+    const xValue = useGeometry
+        ? (feature.geometry as Point).x
+        : feature.attributes[xField];
+    const yValue = useGeometry
+        ? (feature.geometry as Point).y
+        : feature.attributes[yField];
+    const outSpatialReference =
+        inlineManager.spatialReference as SpatialReference;
+    const point = new Point({
+        longitude: xValue,
+        latitude: yValue,
+        spatialReference: inSpatialReference,
+    });
+
     // Find the closest feature to the current point along the route.
     const closestGraphic = findClosestFeature(routeSegments.features, point);
-    
+
     // Get the measure info from the closest feature.
-    const measure = calculateMeasureFromPoint(point, closestGraphic, outSpatialReference);
+    const measure = calculateMeasureFromPoint(
+        point,
+        closestGraphic,
+        outSpatialReference,
+    );
 
     if (measure == null) {
         return null;
@@ -78,7 +101,7 @@ function setMValueForFeature(
 
 /**
  * Retrieves all segments for a specified route using linear referencing configuration.
- * 
+ *
  * @param linearReferencingConfig - Configuration object for linear referencing.
  * @param routeId - Identifier for the route whose segments are to be retrieved.
  * @param spatialReference - The spatial reference for the query.
@@ -86,16 +109,16 @@ function setMValueForFeature(
  * @throws An error if no segments are found or if the query fails.
  */
 export async function getSegmentsForRoute(
-    linearReferencingConfig: LinearReferencingConfig, 
-    routeId: string, 
-    spatialReference: SpatialReference
-): Promise<FeatureSet>  {
+    linearReferencingConfig: LinearReferencingConfig,
+    routeId: string,
+    spatialReference: SpatialReference,
+): Promise<FeatureSet> {
     try {
         // Query for all the segments of this route
         const result = await queryForSegments(
             linearReferencingConfig,
             routeId,
-            spatialReference
+            spatialReference,
         );
 
         if (result.features.length === 0) {
@@ -112,7 +135,7 @@ export async function getSegmentsForRoute(
 
 function findClosestFeature(
     features: __esri.Graphic[],
-    point: __esri.Point
+    point: __esri.Point,
 ): __esri.Graphic {
     if (features.length === 0) {
         throw new Error("Invalid argument. Feature count = 0");
@@ -130,7 +153,10 @@ function findClosestFeature(
         const graphic = features[i];
 
         if (graphic.geometry) {
-            const newPoint = geometryEngine.nearestCoordinate(graphic.geometry, point);
+            const newPoint = geometryEngine.nearestCoordinate(
+                graphic.geometry,
+                point,
+            );
 
             // Check if this graphic is closer
             if (!newPoint.isEmpty) {
@@ -159,7 +185,7 @@ function findClosestFeature(
  */
 export function findLineSegmentThatContainsMeasure(
     measureValue: number,
-    polyline: __esri.Polyline
+    polyline: __esri.Polyline,
 ): LineSegment {
     const numberOfVertices = getNumberOfVertex(polyline);
     let lastPoint: __esri.Point = getPointAtVertex(0, polyline);
@@ -171,7 +197,9 @@ export function findLineSegmentThatContainsMeasure(
     if (lastPoint.m > measureValue) {
         lastPoint = getPointAtVertex(numberOfVertices - 1, polyline);
         if (lastPoint.m > measureValue) {
-            throw new Error("Measure value not found in the supplied polyline.");
+            throw new Error(
+                "Measure value not found in the supplied polyline.",
+            );
         }
 
         reversed = true;
@@ -183,7 +211,10 @@ export function findLineSegmentThatContainsMeasure(
         for (let i = numberOfVertices - 2; i >= 0; i--) {
             currentPoint = getPointAtVertex(i, polyline);
             if (currentPoint.m! >= measureValue) {
-                return <LineSegment>{ startPoint: lastPoint, endPoint: currentPoint };
+                return <LineSegment>{
+                    startPoint: lastPoint,
+                    endPoint: currentPoint,
+                };
             }
             lastPoint = currentPoint;
         }
@@ -193,7 +224,10 @@ export function findLineSegmentThatContainsMeasure(
         for (let i = 1; i < numberOfVertices; i++) {
             currentPoint = getPointAtVertex(i, polyline);
             if (currentPoint.m! >= measureValue) {
-                return <LineSegment>{ startPoint: lastPoint, endPoint: currentPoint };
+                return <LineSegment>{
+                    startPoint: lastPoint,
+                    endPoint: currentPoint,
+                };
             }
             lastPoint = currentPoint;
         }
@@ -206,16 +240,16 @@ export function findLineSegmentThatContainsMeasure(
 function calculateMeasureFromPoint(
     point: __esri.Point,
     nearestSegmentFeature: __esri.Graphic,
-    spatialReference: __esri.SpatialReference
+    spatialReference: __esri.SpatialReference,
 ): number | null {
     const nearestPoint = geometryEngine.nearestCoordinate(
         nearestSegmentFeature.geometry,
-        point
+        point,
     ) as NearestPointResult;
 
     const nearestVertex = geometryEngine.nearestVertex(
         nearestSegmentFeature.geometry,
-        nearestPoint.coordinate
+        nearestPoint.coordinate,
     ) as NearestPointResult;
 
     // Is this is a vertex?
@@ -223,15 +257,18 @@ function calculateMeasureFromPoint(
         nearestPoint.coordinate.x === nearestVertex.coordinate.x &&
         nearestPoint.coordinate.y === nearestVertex.coordinate.y;
 
-    const containingSegment = findAdjacentVertices(nearestSegmentFeature.toJSON(), nearestPoint.vertexIndex);
+    const containingSegment = findAdjacentVertices(
+        nearestSegmentFeature.toJSON(),
+        nearestPoint.vertexIndex,
+    );
 
     // If this is a vertex, no interpolation needed.
     if (isVertex) {
         const stationPoint = getPointAtVertex(
             nearestVertex.vertexIndex,
-            nearestSegmentFeature.geometry as Polyline
+            nearestSegmentFeature.geometry as Polyline,
         );
-        
+
         return stationPoint.m;
 
         // Interpolate
@@ -262,11 +299,17 @@ function calculateMeasureFromPoint(
 /**
  * Find the vertices of the polyline that encapsulate the point of interest
  */
-function findAdjacentVertices(containingFeatureJSON, vertexIndex: number): LineSegment {
+function findAdjacentVertices(
+    containingFeatureJSON,
+    vertexIndex: number,
+): LineSegment {
     const polyline: __esri.Polyline = Graphic.fromJSON(containingFeatureJSON)
         .geometry as __esri.Polyline;
 
-    const nearestVertexPoint: __esri.Point = getPointAtVertex(vertexIndex, polyline);
+    const nearestVertexPoint: __esri.Point = getPointAtVertex(
+        vertexIndex,
+        polyline,
+    );
 
     /* Note:  measureInfo.nearestPoint.vertexIndex seems to always be the previous vertex in the polyline.
      * in which case we can just return a line segment with vertexIndex +1 as the endPoint.  Then we don't need all the
@@ -275,9 +318,13 @@ function findAdjacentVertices(containingFeatureJSON, vertexIndex: number): LineS
     const startVertex = nearestVertexPoint;
 
     // Get the desired path/vertex (Esri's nearestCoordinate geometryEngine method never returns the last vertex. So vertexIndex + 1 should never be out of bounds.)
-    const pathVertexInfo = getPathIndexForVertexIndex(vertexIndex + 1, polyline);
+    const pathVertexInfo = getPathIndexForVertexIndex(
+        vertexIndex + 1,
+        polyline,
+    );
 
-    const vertex = polyline.paths[pathVertexInfo.pathIndex][pathVertexInfo.vertexIndex];
+    const vertex =
+        polyline.paths[pathVertexInfo.pathIndex][pathVertexInfo.vertexIndex];
     // If the Z value exists within the vertex it is the 3rd value in the object, with M being the 4th.
     // If no Z value present, it does not exist in the vertex and therefore the M value is the 3rd value in the object.
     const vertexHasZ = vertex.length === 4;
@@ -294,10 +341,13 @@ function findAdjacentVertices(containingFeatureJSON, vertexIndex: number): LineS
 
 /**
  * Given a vertex index, get the point including m-value at that index
- * @param vertexIndex
- * @param geometry
+ * @param vertexIndex The vertex along a line that will be used to calculate the m value.
+ * @param geometry The polyline that the vertex is found in.
  */
-export function getPointAtVertex(vertexIndex: number, geometry: __esri.Polyline): __esri.Point {
+export function getPointAtVertex(
+    vertexIndex: number,
+    geometry: __esri.Polyline,
+): __esri.Point {
     const polyline = geometry;
 
     // We require at least 1 part. If there are multiparts, we'll only use the first part.
@@ -307,7 +357,8 @@ export function getPointAtVertex(vertexIndex: number, geometry: __esri.Polyline)
 
     // Get the desired path
     const pathVertexInfo = getPathIndexForVertexIndex(vertexIndex, geometry);
-    const vertex = polyline.paths[pathVertexInfo.pathIndex][pathVertexInfo.vertexIndex];
+    const vertex =
+        polyline.paths[pathVertexInfo.pathIndex][pathVertexInfo.vertexIndex];
     // If the Z value exists within the vertex it is the 3rd value in the object, with M being the 4th.
     // If no Z value present, it does not exist in the vertex and therefore the M value is the 3rd value in the object.
     const vertexHasZ = vertex.length === 4;
@@ -328,7 +379,7 @@ export function getPointAtVertex(vertexIndex: number, geometry: __esri.Polyline)
  */
 function getPathIndexForVertexIndex(
     vertexIndex: number,
-    geometry: __esri.Polyline
+    geometry: __esri.Polyline,
 ): PathAndVertexInfo {
     let cumulative = 0;
 
@@ -338,7 +389,8 @@ function getPathIndexForVertexIndex(
         if (cumulative > vertexIndex) {
             return {
                 pathIndex: i,
-                vertexIndex: vertexIndex - cumulative + geometry.paths[i].length,
+                vertexIndex:
+                    vertexIndex - cumulative + geometry.paths[i].length,
             };
         }
     }
@@ -352,13 +404,13 @@ function getPathIndexForVertexIndex(
 
 /**
  * Use the m-values of the polyline to determine the length.
- * @param geometry
+ * @param geometry the polyline that includes m values.
  */
 export function getLengthOfLineUsingMValue(geometry: __esri.Polyline): number {
     const startPoint = getPointAtVertex(0, geometry);
     const endPoint = getPointAtVertex(
         geometry.paths[geometry.paths.length - 1].length - 1,
-        geometry
+        geometry,
     );
 
     if (!startPoint.hasM || !endPoint.hasM) {
@@ -369,30 +421,34 @@ export function getLengthOfLineUsingMValue(geometry: __esri.Polyline): number {
 
 /**
  * Return the total number of vertices in a multipart polyline.
- * @param geometry
+ * @param geometry the polyline
  */
 export function getNumberOfVertex(geometry: __esri.Polyline): number {
     let cumulative = 0;
 
-    geometry.paths.forEach(path => {
+    geometry.paths.forEach((path) => {
         cumulative += path.length;
     });
 
     return cumulative;
-}/**
+} /**
  * Trim the provided featureSet to the selected range.
- * @param featureSet
- * @param start
- * @param end
- * @param config
+ * @param featureSet The featureSet to be modified.
+ * @param start The minimum m value.
+ * @param end The maximum m value.
+ * @param config The linear referencing config that describes the inline view.
  */
 export function trimFeatureSetToRange(
     featureSet: __esri.FeatureSet,
     start: number,
     end: number,
-    config: LinearReferencingConfig
+    config: LinearReferencingConfig,
 ): void {
-    if (!featureSet || featureSet.features.length === 0 || !(<any>featureSet).hasM) {
+    if (
+        !featureSet ||
+        featureSet.features.length === 0 ||
+        !(<any>featureSet).hasM
+    ) {
         return;
     }
 
@@ -422,21 +478,30 @@ export function trimFeatureSetToRange(
 
         if (config.calculateStationUsingAttributes) {
             // The start station should be the smallest and the end station should be the largest value.
-            startOfFullRoute = feature.attributes[config.segmentsBeginStationField];
+            startOfFullRoute =
+                feature.attributes[config.segmentsBeginStationField];
             endOfFullRoute = feature.attributes[config.segmentsEndStationField];
         } else {
             startOfFullRoute = getPointAtVertex(0, geometry).m!;
-            endOfFullRoute = getPointAtVertex(getNumberOfVertex(geometry) - 1, geometry).m!;
+            endOfFullRoute = getPointAtVertex(
+                getNumberOfVertex(geometry) - 1,
+                geometry,
+            ).m!;
         }
 
         // The start should be the smallest and the end should be the largest point.
         if (startOfFullRoute > endOfFullRoute) {
-            [startOfFullRoute, endOfFullRoute] = [endOfFullRoute, startOfFullRoute];
+            [startOfFullRoute, endOfFullRoute] = [
+                endOfFullRoute,
+                startOfFullRoute,
+            ];
             reversedMeasures = true;
         }
 
-        const isFullSelectionBeforeStart = startOfFullRoute < start && endOfFullRoute < start;
-        const isFullSelectionAfterEnd = startOfFullRoute > end && endOfFullRoute > end;
+        const isFullSelectionBeforeStart =
+            startOfFullRoute < start && endOfFullRoute < start;
+        const isFullSelectionAfterEnd =
+            startOfFullRoute > end && endOfFullRoute > end;
 
         if (isFullSelectionBeforeStart || isFullSelectionAfterEnd) {
             featureSet.features.splice(i, 1);
@@ -444,7 +509,11 @@ export function trimFeatureSetToRange(
         }
 
         const removeSegmentsForwards = (point: number) => {
-            const stationPoint = getStationInfoFromSegment(point, feature, config);
+            const stationPoint = getStationInfoFromSegment(
+                point,
+                feature,
+                config,
+            );
             const measureStart = stationPoint.measure;
 
             // Loop through each Path
@@ -458,13 +527,17 @@ export function trimFeatureSetToRange(
                     const nextCoordinates = path[k + 1];
 
                     if (
-                        (!reversedMeasures && coordinates[mPosition] < measureStart) ||
-                        (reversedMeasures && coordinates[mPosition] > measureStart)
+                        (!reversedMeasures &&
+                            coordinates[mPosition] < measureStart) ||
+                        (reversedMeasures &&
+                            coordinates[mPosition] > measureStart)
                     ) {
                         // If next coordinate is also less than the measure, we want to remove the coordinates
                         if (
-                            (!reversedMeasures && nextCoordinates[mPosition] < measureStart) ||
-                            (reversedMeasures && nextCoordinates[mPosition] > measureStart)
+                            (!reversedMeasures &&
+                                nextCoordinates[mPosition] < measureStart) ||
+                            (reversedMeasures &&
+                                nextCoordinates[mPosition] > measureStart)
                         ) {
                             // We're not going to remove the item inside the loop, we'll do it after
                             itemsToRemove++;
@@ -504,16 +577,22 @@ export function trimFeatureSetToRange(
                         feature.attributes[config.segmentsBeginStationField] <=
                         feature.attributes[config.segmentsEndStationField]
                     ) {
-                        feature.attributes[config.segmentsBeginStationField] = start;
+                        feature.attributes[config.segmentsBeginStationField] =
+                            start;
                     } else {
-                        feature.attributes[config.segmentsEndStationField] = start;
+                        feature.attributes[config.segmentsEndStationField] =
+                            start;
                     }
                 }
             }
         };
 
         const removeSegmentsBackwards = (point: number) => {
-            const stationPoint = getStationInfoFromSegment(point, feature, config);
+            const stationPoint = getStationInfoFromSegment(
+                point,
+                feature,
+                config,
+            );
             const measureEnd = stationPoint.measure;
 
             // Loop through each Path
@@ -527,13 +606,17 @@ export function trimFeatureSetToRange(
                     const previousCoordinates = path[k - 1];
 
                     if (
-                        (!reversedMeasures && coordinates[mPosition] > measureEnd) ||
-                        (reversedMeasures && coordinates[mPosition] < measureEnd)
+                        (!reversedMeasures &&
+                            coordinates[mPosition] > measureEnd) ||
+                        (reversedMeasures &&
+                            coordinates[mPosition] < measureEnd)
                     ) {
                         // If previous coordinate is also more than the measure, we want to remove the coordinates
                         if (
-                            (!reversedMeasures && previousCoordinates[mPosition] > measureEnd) ||
-                            (reversedMeasures && previousCoordinates[mPosition] < measureEnd)
+                            (!reversedMeasures &&
+                                previousCoordinates[mPosition] > measureEnd) ||
+                            (reversedMeasures &&
+                                previousCoordinates[mPosition] < measureEnd)
                         ) {
                             // We're not going to remove the item inside the loop, we'll do it after
                             itemsToRemove++;
@@ -573,9 +656,11 @@ export function trimFeatureSetToRange(
                         feature.attributes[config.segmentsBeginStationField] <=
                         feature.attributes[config.segmentsEndStationField]
                     ) {
-                        feature.attributes[config.segmentsEndStationField] = end;
+                        feature.attributes[config.segmentsEndStationField] =
+                            end;
                     } else {
-                        feature.attributes[config.segmentsBeginStationField] = end;
+                        feature.attributes[config.segmentsBeginStationField] =
+                            end;
                     }
                 }
             }
@@ -612,12 +697,12 @@ export function trimFeatureSetToRange(
  * Extract StationInfo from a graphic.
  * @param station The location of interest we want the StationInfo for.
  * @param segment The graphic that contains the measure/station information.
- * @param config
+ * @param config The linear referencing config that describes the inline view.
  */
 function getStationInfoFromSegment(
     station: number,
     segment: Graphic,
-    config: LinearReferencingConfig
+    config: LinearReferencingConfig,
 ): StationInfo {
     let targetMeasure: number;
 
@@ -627,24 +712,26 @@ function getStationInfoFromSegment(
     } else {
         const startStation = Math.min(
             segment.attributes[config.segmentsBeginStationField] as number,
-            segment.attributes[config.segmentsEndStationField] as number
+            segment.attributes[config.segmentsEndStationField] as number,
         );
         const endStation = Math.max(
             segment.attributes[config.segmentsBeginStationField] as number,
-            segment.attributes[config.segmentsEndStationField] as number
+            segment.attributes[config.segmentsEndStationField] as number,
         );
 
         const stationLength = Math.abs(endStation - startStation);
         const relativeStationValue = station - startStation;
         const percent = relativeStationValue / (stationLength * 1.0);
 
-        const lineLength = getLengthOfLineUsingMValue(<__esri.Polyline>segment.geometry);
+        const lineLength = getLengthOfLineUsingMValue(
+            <__esri.Polyline>segment.geometry,
+        );
         const startMeasure = Math.min(
             getPointAtVertex(0, segment.geometry as __esri.Polyline).m,
             getPointAtVertex(
                 getNumberOfVertex(segment.geometry as __esri.Polyline) - 1,
-                segment.geometry as __esri.Polyline
-            ).m
+                segment.geometry as __esri.Polyline,
+            ).m,
         );
         targetMeasure = lineLength * percent + startMeasure;
     }
@@ -652,7 +739,7 @@ function getStationInfoFromSegment(
     // Need to find the coordinate of the target measure
     const lineSegment = findLineSegmentThatContainsMeasure(
         targetMeasure,
-        <__esri.Polyline>segment.geometry
+        <__esri.Polyline>segment.geometry,
     );
 
     // ensure the target measure is on the line
@@ -663,7 +750,7 @@ function getStationInfoFromSegment(
     const targetPoint = createPointAtTargetMeasure(targetMeasure, lineSegment);
     const result = {
         measure: targetMeasure,
-        pointJSON: targetPoint.toJSON()
+        pointJSON: targetPoint.toJSON(),
     } as StationInfo;
 
     return result;
@@ -671,15 +758,20 @@ function getStationInfoFromSegment(
 
 /**
  * Given a measure value and a line segment that contains the measure value, get the coordinate.
- * @param targetMeasure
- * @param lineSegment
+ * @param targetMeasure the measure value where to create the point.
+ * @param lineSegment the line segment along which the point will be created.
  */
 export function createPointAtTargetMeasure(
     targetMeasure: number,
-    lineSegment: LineSegment
+    lineSegment: LineSegment,
 ): __esri.Point {
-    if (targetMeasure < lineSegment.startPoint.m || targetMeasure > lineSegment.endPoint.m) {
-        throw new Error("Measure value not contained in the supplied lineSegment.");
+    if (
+        targetMeasure < lineSegment.startPoint.m ||
+        targetMeasure > lineSegment.endPoint.m
+    ) {
+        throw new Error(
+            "Measure value not contained in the supplied lineSegment.",
+        );
     }
 
     if (lineSegment.startPoint.m === targetMeasure) {
@@ -690,7 +782,7 @@ export function createPointAtTargetMeasure(
             spatialReference: lineSegment.startPoint.spatialReference,
         });
     } else if (lineSegment.endPoint.m === targetMeasure) {
-        return  new Point({
+        return new Point({
             x: lineSegment.endPoint.x,
             y: lineSegment.endPoint.y,
             z: lineSegment.startPoint.z,
@@ -698,14 +790,17 @@ export function createPointAtTargetMeasure(
         });
     } else {
         const segmentLength = lineSegment.endPoint.m - lineSegment.startPoint.m;
-        const measurePercent = (targetMeasure - lineSegment.startPoint.m) / segmentLength;
+        const measurePercent =
+            (targetMeasure - lineSegment.startPoint.m) / segmentLength;
         const x =
-            (lineSegment.endPoint.x - lineSegment.startPoint.x) * measurePercent +
+            (lineSegment.endPoint.x - lineSegment.startPoint.x) *
+                measurePercent +
             lineSegment.startPoint.x;
         const y =
-            (lineSegment.endPoint.y - lineSegment.startPoint.y) * measurePercent +
+            (lineSegment.endPoint.y - lineSegment.startPoint.y) *
+                measurePercent +
             lineSegment.startPoint.y;
-        return  new Point({
+        return new Point({
             x: x,
             y: y,
             z: lineSegment.startPoint.z,
@@ -734,7 +829,6 @@ export interface LineSegment {
     startPoint: __esri.Point;
     endPoint: __esri.Point;
 }
-
 
 interface PathAndVertexInfo {
     /** The path index. */

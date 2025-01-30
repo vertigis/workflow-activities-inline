@@ -1,4 +1,10 @@
-export type MeasureUnits = "meters" | "feet" | "kilometers" | "miles" | "nautical-miles" | "yards";
+export type MeasureUnits =
+    | "meters"
+    | "feet"
+    | "kilometers"
+    | "miles"
+    | "nautical-miles"
+    | "yards";
 
 /** The linear referencing configuration. */
 export interface LinearReferencingConfig {
