@@ -18,18 +18,18 @@ interface GetMValuesFromCoordinatesInputs {
 
     /**
      * @displayName Feature Set
-     * @description The feature set that will be modified with m values.
+     * @description The Feature Set that will be modified with m values.
      * @required
      */
     featureSet: FeatureSet;
 
     /**
      * Whether to use the feature geometry or to use attributes that represent the coordinates.
-     * If false, requires x and y field names. Default is true.
+     * If false, requires x and y field names. Default is false.
      * 
      * @displayName Use Geometry
      * @description Whether to use the feature geometry or to use attributes that represent the coordinates.
-     * If false, requires x and y field names. Default is true.
+     * If false, requires x and y field names. Default is false.
      */
     useGeometry?: boolean;
 
@@ -50,12 +50,12 @@ interface GetMValuesFromCoordinatesInputs {
     yFieldName?: string;
 
     /**
-     * The spatial reference of the feature set. If not provided will use the one found
-     * on the feature set. If none can be found on the feature set, will use the map's spatial reference.
+     * The spatial reference of the Feature Set. If not provided will use the one found
+     * on the Feature Set. If none can be found on the feature set, will use the map's spatial reference.
      * 
      * @displayName Spatial Reference
-     * @description The spatial reference of the feature set. If not provided will use the one found
-     * on the feature set. If none can be found on the feature set, will use the map's spatial reference.
+     * @description The spatial reference of the Feature Set. If not provided will use the one found
+     * on the feature set. If none can be found on the Feature Set, will use the map's spatial reference.
      */
     spatialReference?: SpatialReference;
 
@@ -72,20 +72,20 @@ interface GetMValuesFromCoordinatesInputs {
 
 interface GetMValuesFromCoordinatesOutputs {
     /**
-     * The feature set updated with M values.
+     * The Feature Set updated with m values.
      * 
      * @displayName FeatureSet
-     * @description The feature set updated with M values.
+     * @description The Feature Set updated with m values.
      */
     featureSet: any;
 }
 
 /**
- *  Generate M values for a line based on present x and y values.
+ *  Generate m values for a line based on present x and y values.
  * 
  * @displayName Get M Values From Coordinates
  * @category VertiGIS Inline
- * @description Generate M values for a line based on present x and y values.
+ * @description Generate m values for a line based on present x and y values.
  */
 export default class GetMValuesFromCoordinatesActivity
     implements IActivityHandler
@@ -104,7 +104,7 @@ export default class GetMValuesFromCoordinatesActivity
         featureSet = await calculateMValuesFromCoordinates(
             inputs.inlineManager,
             featureSet,
-            inputs.useGeometry ?? false,
+            !!inputs.useGeometry,
             inputs.xFieldName ?? "",
             inputs.yFieldName ?? "",
             spatialReference,

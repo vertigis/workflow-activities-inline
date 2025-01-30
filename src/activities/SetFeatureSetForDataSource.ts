@@ -3,21 +3,21 @@ import { IActivityContext } from "@vertigis/workflow/IActivityHandler";
 
 interface SetFeatureSetForDataSourceInputs {
     /**
-     * The FeatureSet that will be used by the data source.
+     * The Feature Set that will be used by the data source.
      *
-     * @displayName FeatureSet
-     * @description The FeatureSet that will be used by the data source.
+     * @displayName Feature Set
+     * @description The Feature Set that will be used by the data source.
      * @required
      */
     featureSet: __esri.FeatureSet;
 }
 
 /**
- * Designate a FeatureSet to be used in an Inline data source.
+ * Designate a Feature Set to be used in an Inline data source.
  * 
- * @displayName Set FeatureSet For Data Source
+ * @displayName Set Feature Set For Data Source
  * @category VertiGIS Inline
- * @description Designate a FeatureSet to be used in an Inline data source.
+ * @description Designate a Feature Set to be used in an Inline data source.
  */
 export default class SetFeatureSetForDataSourceActivity
     implements IActivityHandler

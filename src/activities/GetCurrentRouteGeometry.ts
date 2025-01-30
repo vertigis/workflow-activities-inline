@@ -25,10 +25,10 @@ interface GetCurrentRouteGeometryInputs {
 
 interface GetCurrentRouteGeometryOutputs {
     /**
-     * The geometry of the current highlighted route.
+     * The geometry of the current highlighted route or range.
      * 
      * @displayName Geometry
-     * @description The geometry of the current highlighted route.
+     * @description The geometry of the current highlighted route or range.
      */
     geometry: __esri.Geometry | __esri.Geometry[];
 }
