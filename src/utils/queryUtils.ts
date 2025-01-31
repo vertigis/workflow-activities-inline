@@ -13,7 +13,11 @@ import { LinearReferencingConfig } from "../models/LinearReferencingConfig";
  * @returns A promise that resolves to the features retrieved by the query.
  * @throws An error if the query transfer limit is exceeded.
  */
-export async function queryForSegments(config: LinearReferencingConfig, routeId: string, spatialReference: SpatialReference) {
+export async function queryForSegments(
+    config: LinearReferencingConfig,
+    routeId: string,
+    spatialReference: SpatialReference,
+) {
     const queryUrl = await createCenterlineQuery(config);
 
     const quote = getQuoteForFieldType(config.routeIdFieldType);
@@ -34,7 +38,9 @@ export async function queryForSegments(config: LinearReferencingConfig, routeId:
     }
 }
 
-const getSegmentsFieldsFromConfig = (config: LinearReferencingConfig): string[] => {
+const getSegmentsFieldsFromConfig = (
+    config: LinearReferencingConfig,
+): string[] => {
     const outFields = getDistinctRouteInfoFieldsForSegments(config);
 
     if (config.segmentsBeginStationField) {
@@ -48,7 +54,9 @@ const getSegmentsFieldsFromConfig = (config: LinearReferencingConfig): string[] 
     return outFields;
 };
 
-const getDistinctRouteInfoFieldsForSegments = (config: LinearReferencingConfig): string[] => {
+const getDistinctRouteInfoFieldsForSegments = (
+    config: LinearReferencingConfig,
+): string[] => {
     const outFields: string[] = [];
 
     if (config.routeIdField) {
@@ -91,7 +99,9 @@ const getQuoteForFieldType = (fieldType: string): string => {
 // Create a query task using the centerline config.  This is done to combat a
 // race condition that can happen on initial load as well as when modifying the
 // map service options.
-const createCenterlineQuery = async (config: LinearReferencingConfig): Promise<string> => {
+const createCenterlineQuery = async (
+    config: LinearReferencingConfig,
+): Promise<string> => {
     let centerlineUrl = config.centerlineUrl;
     if (!centerlineUrl) {
         const mapServiceInfo = await getMapServiceLayers(config);
@@ -101,14 +111,12 @@ const createCenterlineQuery = async (config: LinearReferencingConfig): Promise<s
 };
 
 // Query the map service to get all the layers on the map service.
-export async function getMapServiceLayers(
-    config: any
-): Promise<any> {
+export async function getMapServiceLayers(config: any): Promise<any> {
     if (config.mapService && config.centerlineLayer) {
         try {
             const response = await request(config.mapService + "/layers");
             if (response.data) {
-                return response.data
+                return response.data;
             }
         } catch (error) {
             console.log(`Could not get layer info for ${config.mapService}`);
@@ -117,11 +125,16 @@ export async function getMapServiceLayers(
     return null;
 }
 
-// Use the map service to create the centerline layer url.
-export function getCenterlineUrl(
-    config: any,
-    mapService: any
-): string {
+/**
+ * Executes a query to retrieve segments based on the provided configuration and route ID.
+ *
+ * @param config - The configuration object containing linear referencing settings.
+ * @param routeId - The identifier for the route to query.
+ * @param spatialReference - The spatial reference for the query output.
+ * @returns A promise that resolves to the queried features.
+ * @throws An error if the query transfer limit is exceeded.
+ */
+export function getCenterlineUrl(config: any, mapService: any): string {
     const url: string = "";
 
     if (mapService?.layers && config.mapService && config.centerlineLayer) {
