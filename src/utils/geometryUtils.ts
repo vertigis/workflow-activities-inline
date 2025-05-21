@@ -8,7 +8,7 @@ import { LinearReferencingConfig } from "../models/LinearReferencingConfig";
 import { NearestPointResult } from "../models/NearestPointResult";
 import { queryForSegments } from "./queryUtils";
 import { StationInfo } from "../models/StationInfo";
-
+import * as proximityOperator from "@arcgis/core/geometry/operators/proximityOperator";
 /**
  * Extracts M values from a set of coordinates within a given feature set.
  *
@@ -75,8 +75,8 @@ function setMValueForFeature(
     const outSpatialReference =
         inlineManager.spatialReference as SpatialReference;
     const point = new Point({
-        longitude: xValue,
-        latitude: yValue,
+        x: xValue,
+        y: yValue,
         spatialReference: inSpatialReference,
     });
 
@@ -242,12 +242,12 @@ function calculateMeasureFromPoint(
     nearestSegmentFeature: __esri.Graphic,
     spatialReference: __esri.SpatialReference,
 ): number | null {
-    const nearestPoint = geometryEngine.nearestCoordinate(
+    const nearestPoint = proximityOperator.getNearestCoordinate(
         nearestSegmentFeature.geometry,
         point,
     ) as NearestPointResult;
 
-    const nearestVertex = geometryEngine.nearestVertex(
+    const nearestVertex = proximityOperator.getNearestVertex(
         nearestSegmentFeature.geometry,
         nearestPoint.coordinate,
     ) as NearestPointResult;
